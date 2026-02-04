@@ -14,6 +14,7 @@ export function GameScreen({ state, dispatch }: GameScreenProps) {
     endTime: state.endTime,
     remainingMs: state.remainingMs,
     dispatch,
+    vibrateEnabled: state.vibrateEnabled,
   });
 
   const formatTime = (ms: number): string => {
@@ -22,6 +23,9 @@ export function GameScreen({ state, dispatch }: GameScreenProps) {
     const seconds = totalSeconds % 60;
     return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
   };
+
+  const secondsLeft = Math.ceil(displayMs / 1000);
+  const fraction = Math.max(0, Math.min(1, displayMs / (state.turnDuration * 1000)));
 
   const handlePause = () => {
     console.log("Pause");
@@ -53,9 +57,17 @@ export function GameScreen({ state, dispatch }: GameScreenProps) {
         </CardHeader>
         <CardContent className="space-y-8">
           {/* Timer Display */}
-          <div className="flex justify-center">
-            <div className="text-7xl font-bold font-mono tracking-wider text-primary">
+          <div className="flex flex-col items-center gap-3">
+            <div className={`text-8xl font-extrabold font-mono tracking-wider ${secondsLeft > 0 && secondsLeft <= 5 ? 'text-destructive' : 'text-primary'} ${state.phase === 'EXPIRED' ? 'animate-pulse' : ''}`}>
               {formatTime(displayMs)}
+            </div>
+
+            {/* Progress bar */}
+            <div className="w-full h-2 bg-input rounded-full overflow-hidden">
+              <div
+                className={`h-2 bg-primary transition-[width] duration-200 ${state.phase === 'EXPIRED' ? 'bg-destructive' : ''}`}
+                style={{ width: `${Math.round(fraction * 100)}%` }}
+              />
             </div>
           </div>
 

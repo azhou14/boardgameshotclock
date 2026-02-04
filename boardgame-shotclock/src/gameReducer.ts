@@ -7,10 +7,12 @@ export interface GameState {
   turnDuration: number;
   endTime: number | null; // timestamp when current turn ends
   remainingMs: number; // milliseconds remaining (used when paused)
+  vibrateEnabled: boolean;
 }
 
 export type GameAction =
   | { type: "SET_CONFIG"; payload: { players: number; turnDuration: number } }
+  | { type: "SET_VIBRATE"; payload: { enabled: boolean } }
   | { type: "START_GAME" }
   | { type: "PAUSE"; payload: { remainingMs: number } }
   | { type: "RESUME" }
@@ -25,6 +27,7 @@ export const initialGameState: GameState = {
   endTime: null,
   remainingMs: 0,
   turnDuration: 60,
+  vibrateEnabled: true,
 };
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
@@ -34,6 +37,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         players: action.payload.players,
         turnDuration: action.payload.turnDuration,
+      };
+
+    case "SET_VIBRATE":
+      return {
+        ...state,
+        vibrateEnabled: action.payload.enabled,
       };
 
     case "START_GAME":

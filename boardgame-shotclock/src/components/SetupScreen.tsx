@@ -32,6 +32,10 @@ export function SetupScreen({ state, dispatch }: SetupScreenProps) {
     dispatch({ type: "START_GAME" });
   };
 
+  const handleVibrateToggle = (enabled: boolean) => {
+    dispatch({ type: "SET_VIBRATE", payload: { enabled } });
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-background">
       <Card className="w-full max-w-md">
@@ -77,6 +81,18 @@ export function SetupScreen({ state, dispatch }: SetupScreenProps) {
               }
               className="text-lg"
             />
+          </div>
+
+          {/* Vibration Toggle */}
+          <div className="flex items-center gap-3">
+            <input
+              id="vibrate"
+              type="checkbox"
+              checked={state.vibrateEnabled}
+              onChange={(e) => handleVibrateToggle(e.target.checked)}
+              className="h-4 w-4"
+            />
+            <Label htmlFor="vibrate">Vibrate on expiry</Label>
           </div>
 
           {/* Start Button */}
