@@ -1,28 +1,35 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import type { GameState, GameAction } from "@/gameReducer";
 
 interface SetupScreenProps {
-  onStart: (players: number, turnDuration: number) => void;
+  state: GameState;
+  dispatch: React.Dispatch<GameAction>;
 }
 
-export function SetupScreen({ onStart }: SetupScreenProps) {
-  const [players, setPlayers] = useState(4);
-  const [turnDuration, setTurnDuration] = useState(60);
+export function SetupScreen({ state, dispatch }: SetupScreenProps) {
+  const handlePlayerChange = (delta: number) => {
+    const newPlayers = Math.max(2, Math.min(8, state.players + delta));
+    dispatch({
+      type: "SET_CONFIG",
+      payload: { players: newPlayers, turnDuration: state.turnDuration },
+    });
+  };
+
+  const handleDurationChange = (duration: number) => {
+    dispatch({
+      type: "SET_CONFIG",
+      payload: { players: state.players, turnDuration: duration },
+    });
+  };
 
   const handleStart = () => {
-    console.log(`Starting game with ${players} players and ${turnDuration}s turn duration`);
-    onStart(players, turnDuration);
-  };
-
-  const incrementPlayers = () => {
-    if (players < 8) setPlayers(players + 1);
-  };
-
-  const decrementPlayers = () => {
-    if (players > 2) setPlayers(players - 1);
+    console.log(
+      `Starting game with ${state.players} players and ${state.turnDuration}s turn duration`
+    );
+    dispatch({ type: "START_GAME" });
   };
 
   return (
@@ -34,18 +41,20 @@ export function SetupScreen({ onStart }: SetupScreenProps) {
         <CardContent className="space-y-6">
           {/* Players Selector */}
           <div className="space-y-3">
-            <Label htmlFor="players">Number of Players: {players}</Label>
+            <Label htmlFor="players">Number of Players: {state.players}</Label>
             <div className="flex items-center gap-3">
               <Button
-                onClick={decrementPlayers}
+                onClick={() => handlePlayerChange(-1)}
                 variant="outline"
                 className="flex-1"
               >
                 −
               </Button>
-              <span className="text-2xl font-bold text-center flex-1">{players}</span>
+              <span className="text-2xl font-bold text-center flex-1">
+                {state.players}
+              </span>
               <Button
-                onClick={incrementPlayers}
+                onClick={() => handlePlayerChange(1)}
                 variant="outline"
                 className="flex-1"
               >
@@ -62,18 +71,16 @@ export function SetupScreen({ onStart }: SetupScreenProps) {
               type="number"
               min="10"
               max="300"
-              value={turnDuration}
-              onChange={(e) => setTurnDuration(Math.max(10, parseInt(e.target.value) || 0))}
+              value={state.turnDuration}
+              onChange={(e) =>
+                handleDurationChange(Math.max(10, parseInt(e.target.value) || 0))
+              }
               className="text-lg"
             />
           </div>
 
           {/* Start Button */}
-          <Button
-            onClick={handleStart}
-            className="w-full h-12 text-lg"
-            size="lg"
-          >
+          <Button onClick={handleStart} className="w-full h-12 text-lg" size="lg">
             Start Game
           </Button>
         </CardContent>
