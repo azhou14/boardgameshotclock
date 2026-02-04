@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useGameTimer } from "@/hooks/useGameTimer";
 import type { GameState, GameAction } from "@/gameReducer";
 
 interface GameScreenProps {
@@ -8,9 +9,23 @@ interface GameScreenProps {
 }
 
 export function GameScreen({ state, dispatch }: GameScreenProps) {
+  const displayMs = useGameTimer({
+    phase: state.phase,
+    endTime: state.endTime,
+    remainingMs: state.remainingMs,
+    dispatch,
+  });
+
+  const formatTime = (ms: number): string => {
+    const totalSeconds = Math.ceil(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+  };
+
   const handlePause = () => {
     console.log("Pause");
-    dispatch({ type: "PAUSE" });
+    dispatch({ type: "PAUSE", payload: { remainingMs: displayMs } });
   };
 
   const handleResume = () => {
@@ -40,7 +55,7 @@ export function GameScreen({ state, dispatch }: GameScreenProps) {
           {/* Timer Display */}
           <div className="flex justify-center">
             <div className="text-7xl font-bold font-mono tracking-wider text-primary">
-              00:00
+              {formatTime(displayMs)}
             </div>
           </div>
 
@@ -53,7 +68,7 @@ export function GameScreen({ state, dispatch }: GameScreenProps) {
               {state.players - state.currentPlayer - 1} remaining
             </p>
             <p className="text-xs text-muted-foreground mt-2">
-              Phase: {state.phase}
+              {state.phase === "EXPIRED" ? "⏱️ Time's up!" : `Phase: ${state.phase}`}
             </p>
           </div>
 
@@ -72,6 +87,7 @@ export function GameScreen({ state, dispatch }: GameScreenProps) {
                 onClick={handleResume}
                 variant="secondary"
                 className="w-full h-10"
+                disabled={state.phase === "SETUP"}
               >
                 Resume
               </Button>
