@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import type { GameAction } from "@/gameReducer";
-import { alarmUrl } from "@/components/audio";
+import { playAlarmLoop } from "@/components/audio";
 
 interface UseGameTimerProps {
   phase: "SETUP" | "RUNNING" | "PAUSED" | "EXPIRED";
@@ -42,9 +42,6 @@ export function useGameTimer({
 
     expiredFiredRef.current = false;
 
-    // prepare audio element (URL provided by audio index module)
-    const alarm = new Audio(alarmUrl);
-
     // Interval updates display every 50ms for smooth countdown
     const interval = setInterval(() => {
       const now = Date.now();
@@ -55,12 +52,11 @@ export function useGameTimer({
       if (remaining === 0 && !expiredFiredRef.current) {
         expiredFiredRef.current = true;
         console.log("Timer expired!");
-        // play alarm (best-effort)
+        // start looping alarm via shared audio manager (persist until stopAlarm called)
         try {
-          alarm.currentTime = 0;
-          void alarm.play();
+          playAlarmLoop();
         } catch (e) {
-          // ignore play errors (autoplay policies)
+          console.warn("playAlarmLoop threw", e);
         }
 
         // vibrate if supported and enabled (guarded)
@@ -77,8 +73,11 @@ export function useGameTimer({
       }
     }, 50);
 
-    return () => clearInterval(interval);
-  }, [phase, endTime, dispatch]);
+    // Do not stop the alarm here; it should be stopped explicitly (e.g. on next player/stop)
+    return () => {
+      clearInterval(interval);
+    };
+  }, [phase, endTime, dispatch, vibrateEnabled]);
 
   // Update display when paused or phase changes
   useEffect(() => {

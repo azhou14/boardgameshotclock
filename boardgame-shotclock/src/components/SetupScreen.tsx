@@ -73,11 +73,11 @@ export function SetupScreen({ state, dispatch }: SetupScreenProps) {
             <Input
               id="duration"
               type="number"
-              min="10"
+              min="5"
               max="300"
               value={state.turnDuration}
               onChange={(e) =>
-                handleDurationChange(Math.max(10, parseInt(e.target.value) || 0))
+                handleDurationChange(Math.max(5, parseInt(e.target.value) || 0))
               }
               className="text-lg"
             />

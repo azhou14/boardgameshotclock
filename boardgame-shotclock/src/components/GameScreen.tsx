@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useGameTimer } from "@/hooks/useGameTimer";
+import { stopAlarm } from "@/components/audio";
 import type { GameState, GameAction } from "@/gameReducer";
 
 interface GameScreenProps {
@@ -40,11 +41,22 @@ export function GameScreen({ state, dispatch }: GameScreenProps) {
   const handleNext = () => {
     console.log("Next player");
     dispatch({ type: "NEXT_PLAYER" });
+    // stop any playing alarm immediately when moving to next player
+    try {
+      stopAlarm();
+    } catch (e) {
+      // ignore
+    }
   };
 
   const handleStop = () => {
     console.log("Stop");
     dispatch({ type: "STOP_TO_SETUP" });
+    try {
+      stopAlarm();
+    } catch (e) {
+      // ignore
+    }
   };
 
   return (
